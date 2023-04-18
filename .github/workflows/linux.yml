@@ -1,0 +1,52 @@
+name: Build DAPLink (Linux)
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout source files
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: Install Embedded Arm Toolchain
+      run:  |
+        curl -O -L https://developer.arm.com/-/media/Files/downloads/gnu-rm/10.3-2021.07/gcc-arm-none-eabi-10.3-2021.07-x86_64-linux.tar.bz2
+        md5sum gcc-arm-none-eabi-10.3-2021.07-x86_64-linux.tar.bz2
+        echo Installing  in ${{ runner.temp }}/arm-gcc
+        mkdir -p ${{ runner.temp }}/arm-gcc
+        tar jvxf gcc-arm-none-eabi-10.3-2021.07-x86_64-linux.tar.bz2 -C ${{ runner.temp }}/arm-gcc --strip-components 1
+
+    - name: Compile
+      run:  |
+        export PATH="${{ runner.temp }}/arm-gcc/bin/:/home/runner/.local/bin:$PATH"
+        arm-none-eabi-gcc -mcpu=cortex-m4 -I nrfx/mdk/ -I CMSIS_5/CMSIS/Core/Include --specs=nosys.specs -L nrfx/mdk -T nrfx/mdk/nrf52805_xxaa.ld -DNRF52805_XXAA -Os src/empty_main.c nrfx/mdk/gcc_startup_nrf52805.S nrfx/mdk/system_nrf52.c -o nrf52805.elf && arm-none-eabi-objcopy -O ihex nrf52805.elf nrf52805.hex
+        arm-none-eabi-gcc -mcpu=cortex-m4 -I nrfx/mdk/ -I CMSIS_5/CMSIS/Core/Include --specs=nosys.specs -L nrfx/mdk -T nrfx/mdk/nrf52810_xxaa.ld -DNRF52810_XXAA -Os src/empty_main.c nrfx/mdk/gcc_startup_nrf52810.S nrfx/mdk/system_nrf52.c -o nrf52810.elf && arm-none-eabi-objcopy -O ihex nrf52810.elf nrf52810.hex
+        arm-none-eabi-gcc -mcpu=cortex-m4 -I nrfx/mdk/ -I CMSIS_5/CMSIS/Core/Include --specs=nosys.specs -L nrfx/mdk -T nrfx/mdk/nrf52811_xxaa.ld -DNRF52811_XXAA -Os src/empty_main.c nrfx/mdk/gcc_startup_nrf52811.S nrfx/mdk/system_nrf52.c -o nrf52811.elf && arm-none-eabi-objcopy -O ihex nrf52811.elf nrf52811.hex
+        arm-none-eabi-gcc -mcpu=cortex-m4 -I nrfx/mdk/ -I CMSIS_5/CMSIS/Core/Include --specs=nosys.specs -L nrfx/mdk -T nrfx/mdk/nrf52820_xxaa.ld -DNRF52820_XXAA -Os src/empty_main.c nrfx/mdk/gcc_startup_nrf52820.S nrfx/mdk/system_nrf52.c -o nrf52820.elf && arm-none-eabi-objcopy -O ihex nrf52820.elf nrf52820.hex
+        arm-none-eabi-gcc -mcpu=cortex-m4 -I nrfx/mdk/ -I CMSIS_5/CMSIS/Core/Include --specs=nosys.specs -L nrfx/mdk -T nrfx/mdk/nrf52832_xxaa.ld -DNRF52832_XXAA -Os src/empty_main.c nrfx/mdk/gcc_startup_nrf52.S nrfx/mdk/system_nrf52.c -o nrf52832.elf && arm-none-eabi-objcopy -O ihex nrf52832.elf nrf52832.hex
+        arm-none-eabi-gcc -mcpu=cortex-m4 -I nrfx/mdk/ -I CMSIS_5/CMSIS/Core/Include --specs=nosys.specs -L nrfx/mdk -T nrfx/mdk/nrf52833_xxaa.ld -DNRF52833_XXAA -Os src/empty_main.c nrfx/mdk/gcc_startup_nrf52833.S nrfx/mdk/system_nrf52.c -o nrf52833.elf && arm-none-eabi-objcopy -O ihex nrf52833.elf nrf52833.hex
+        arm-none-eabi-gcc -mcpu=cortex-m4 -I nrfx/mdk/ -I CMSIS_5/CMSIS/Core/Include --specs=nosys.specs -L nrfx/mdk -T nrfx/mdk/nrf52840_xxaa.ld -DNRF52840_XXAA -Os src/empty_main.c nrfx/mdk/gcc_startup_nrf52840.S nrfx/mdk/system_nrf52.c -o nrf52840.elf && arm-none-eabi-objcopy -O ihex nrf52840.elf nrf52840.hex
+        arm-none-eabi-gcc -mcpu=cortex-m33 -U__ARM_FEATURE_DSP -I nrfx/mdk/ -I CMSIS_5/CMSIS/Core/Include --specs=nosys.specs -L nrfx/mdk -T nrfx/mdk/nrf5340_xxaa_network.ld -DNRF5340_XXAA_NETWORK -Os src/empty_main.c nrfx/mdk/gcc_startup_nrf5340_network.S nrfx/mdk/system_nrf5340_network.c -o nrf5340_network.elf && arm-none-eabi-objcopy -O ihex nrf5340_network.elf nrf5340_network.hex
+        arm-none-eabi-gcc -mcpu=cortex-m33 -U__ARM_FEATURE_DSP -I nrfx/mdk/ -I CMSIS_5/CMSIS/Core/Include --specs=nosys.specs -L nrfx/mdk -T nrfx/mdk/nrf5340_xxaa_application.ld -DNRF5340_XXAA_APPLICATION -Os src/empty_main.c nrfx/mdk/gcc_startup_nrf5340_application.S nrfx/mdk/system_nrf5340_application.c -o nrf5340_application.elf && arm-none-eabi-objcopy -O ihex nrf5340_application.elf nrf5340_application.hex
+        arm-none-eabi-gcc -mcpu=cortex-m33 -U__ARM_FEATURE_DSP -I nrfx/mdk/ -I CMSIS_5/CMSIS/Core/Include --specs=nosys.specs -L nrfx/mdk -T nrfx/mdk/nrf9160_xxaa.ld -DNRF9160_XXAA -Os src/empty_main.c nrfx/mdk/gcc_startup_nrf9160.S nrfx/mdk/system_nrf9160.c -o nrf9160.elf && arm-none-eabi-objcopy -O ihex nrf9160.elf nrf9160.hex
+
+
+    - name: Upload test artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: firmware-dev-${{github.run_number}}
+        path: |
+          *.elf
+          *.hex
